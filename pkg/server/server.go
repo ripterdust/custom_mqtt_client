@@ -2,19 +2,46 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-type Httpserver struct {}
-
-func NewServer() *Httpserver {
-  return &Httpserver{}
+type HttpServer struct {
+  port string
 }
 
-func (s *Httpserver) Listen(port string) {
+func NewServer() (*HttpServer) {
+  return &HttpServer {
+    port: ":8080",
+  }
+}
+
+func (s *HttpServer) StartServer() {
+  r := gin.Default()
+
+  r.POST("/send", s.handleSendMessage)
+
+  r.Run()
+}
+
+func (s *HttpServer) handleSendMessage(c *gin.Context) {
+  var message sendMessageRequest
   
-  fmt.Println("Server listening on port: " + port)
-  log.Fatal(http.ListenAndServe(":" + port, nil))
+  if err := c.BindJSON(&message); err != nil {
+    c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request", "ok": false,})
 
+    return
+
+  }
+
+  fmt.Println("----------- MESSAGE ----------------")
+  fmt.Println(message)
+
+  c.JSON(http.StatusOK, gin.H{
+    "message": "message published",
+    "ok": true,
+    "data": message,
+  })
 }
+
