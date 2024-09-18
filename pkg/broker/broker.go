@@ -3,6 +3,7 @@ package broker
 import (
 	"fmt"
 	"sync"
+  "math/rand"
   "time"
 
 	"github.com/ripterdust/custom_mqtt_client.git/pkg/queue"
@@ -19,38 +20,56 @@ func NewBroker() *Broker {
   }
 }
 
-func (b *Broker) createQueueIfNotExists(name string){
-  b.lock.Lock()
+func (b *Broker) ProcessQueue(name string) {
+  queue := b.queues[name]
+  for {
 
-  if _,exists := b.queues[name]; !exists {
-    b.queues[name] = &queue.Queue{}
+    elements := queue.GetAll()
+    if queue.IsEmpty() {
+      timer := rand.Intn(10)
+      
+      time.Sleep(time.Duration(timer) * time.Second)
+      
+      continue
+    }
+    fmt.Printf("Queue %d -> %s  \n",name, len(elements))
+
+    timer := rand.Intn(1)
+    time.Sleep(time.Duration(timer) * time.Second)
+
+    queue.Deque()
+  }
+}
+
+
+func (b *Broker) createQueueIfNotExists(name string){
+  if _,exists := b.queues[name]; exists {
+    return
   }
 
-  defer b.lock.Unlock()
+  b.queues[name] = &queue.Queue{}
+  go b.ProcessQueue(name)
+
 }
 
 
 func (b *Broker) Publish(queueName string, msg string) (bool, string) {
   b.createQueueIfNotExists(queueName)
-  
   queue := b.queues[queueName]
   message := queue.CreateMessage(msg)
+  queue.Enqueue(message)  
   
-  go b.processMessage(message.Id)
+  b.queues[queueName] = queue
 
-  b.lock.Lock()
-  
-  
-
-  defer b.lock.Unlock()
-    
   return false, "Message published successfully"
 }
 
-func (b *Broker) processMessage(messageId string){
-  time.Sleep(5 * time.Second)
+func (b *Broker) Get(queueName string) (bool, *queue.Queue) {
+  q, exists := b.queues[queueName]
 
-  fmt.Println(messageId)
+  if !exists {
+        return false, &queue.Queue{}
+  }  
+  
+  return true, q
 }
-
-
