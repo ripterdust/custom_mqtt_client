@@ -7,7 +7,6 @@ import (
 type Message struct {
   Id          string
   Content     string
-  Processed   bool
 }
 
 type Queue struct {
@@ -42,7 +41,6 @@ func (q *Queue) CreateMessage(content string) Message {
   return Message {
     Content: content,
     Id: generageId(),
-    Processed: false,
   }
 }
 

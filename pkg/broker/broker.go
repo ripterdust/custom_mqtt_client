@@ -24,7 +24,6 @@ func (b *Broker) ProcessQueue(name string) {
   queue := b.queues[name]
   for {
 
-    elements := queue.GetAll()
     if queue.IsEmpty() {
       timer := rand.Intn(10)
       
@@ -32,11 +31,10 @@ func (b *Broker) ProcessQueue(name string) {
       
       continue
     }
-    fmt.Printf("Queue %d -> %s  \n",name, len(elements))
-
-    timer := rand.Intn(1)
+    timer := rand.Intn(10)
     time.Sleep(time.Duration(timer) * time.Second)
-
+    fmt.Println(len(queue.GetAll()) - 1)
+    
     queue.Deque()
   }
 }
