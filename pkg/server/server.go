@@ -35,9 +35,6 @@ func (s *HttpServer) handleSendMessage(c *gin.Context) {
 
   }
 
-  fmt.Println("----------- MESSAGE ----------------")
-  fmt.Println(message)
-
   c.JSON(http.StatusOK, gin.H{
     "message": "message published",
     "ok": true,
