@@ -1,9 +1,13 @@
 package main
 
-import "github.com/ripterdust/custom_mqtt_client.git/pkg/server"
+import (
+	"github.com/ripterdust/custom_mqtt_client.git/pkg/broker"
+	"github.com/ripterdust/custom_mqtt_client.git/pkg/server"
+)
 
 func main(){
-  server := server.NewServer()
+  broker := broker.NewBroker()
+  server := server.NewServer(broker)
 
   server.StartServer()
 }

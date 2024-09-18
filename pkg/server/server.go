@@ -1,19 +1,21 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ripterdust/custom_mqtt_client.git/pkg/broker"
 )
 
 type HttpServer struct {
   port string
+  broker *broker.Broker
 }
 
-func NewServer() (*HttpServer) {
+func NewServer(broker *broker.Broker) (*HttpServer) {
   return &HttpServer {
     port: ":8080",
+    broker: broker,
   }
 }
 
@@ -32,13 +34,13 @@ func (s *HttpServer) handleSendMessage(c *gin.Context) {
     c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request", "ok": false,})
 
     return
-
   }
 
+  err, msg := s.broker.Publish(message.Name, message.Content)
+  
   c.JSON(http.StatusOK, gin.H{
-    "message": "message published",
-    "ok": true,
-    "data": message,
+    "message": msg,
+    "ok": !err,
   })
 }
 
