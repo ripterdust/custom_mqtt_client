@@ -26,7 +26,8 @@ func (s *HttpServer) StartServer() {
   r := gin.Default()
 
   r.POST("/send", s.handleSendMessage)
-  r.GET("/topic", s.handleWebSocket)
+  r.GET("/topics/:topicName", s.handleWebSocket)
+  r.GET("/topics", s.topics)
   r.Run()
 }
 
@@ -47,6 +48,17 @@ func (s *HttpServer) handleSendMessage(c *gin.Context) {
   })
 }
 
+func (s *HttpServer) topics(c *gin.Context) {
+  c.JSON(http.StatusOK, gin.H{
+      "message": "Registered topics", 
+      "ok": true, 
+      "data": gin.H{
+        "topics": s.broker.Topics(),
+      },
+    },
+  )
+}
+
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
@@ -54,7 +66,6 @@ var upgrader = websocket.Upgrader{
 }
 
 func (s *HttpServer) handleWebSocket(c *gin.Context) {
-  fmt.Println("Connecting")
   conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 
   if err != nil {
@@ -64,15 +75,16 @@ func (s *HttpServer) handleWebSocket(c *gin.Context) {
   
   defer conn.Close()
   
-  fmt.Println("Connected")
-  exists, queue := s.broker.Get("queue-1")
+  topicName := c.Param("topicName")
+
+  exists, queue := s.broker.Get(topicName)
   
   if !exists {
     errorMessage := "Queue does not exist"
     err := conn.WriteMessage(websocket.TextMessage, []byte(errorMessage))
     
     if err != nil {
-      fmt.Println("Error al enviar mensaje:", err)
+      fmt.Println("Error while sending message:", err)
     }
     conn.Close()
 

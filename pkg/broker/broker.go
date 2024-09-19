@@ -33,8 +33,7 @@ func (b *Broker) ProcessQueue(name string) {
     }
     timer := rand.Intn(10)
     time.Sleep(time.Duration(timer) * time.Second)
-    fmt.Println(len(queue.GetAll()) - 1)
-    
+  
     queue.Deque()
   }
 }
@@ -70,4 +69,14 @@ func (b *Broker) Get(queueName string) (bool, *queue.Queue) {
   }  
   
   return true, q
+}
+
+func (b *Broker) Topics() []string {
+  keys := []string{}
+
+  for key := range b.queues {
+    keys = append(keys, key)
+  }
+
+  return keys
 }

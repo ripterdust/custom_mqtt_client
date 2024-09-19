@@ -47,3 +47,7 @@ func (q *Queue) CreateMessage(content string) Message {
 func (q *Queue) IsEmpty() bool {
   return len(q.messages) == 0
 }
+
+func (q *Queue) Front() Message {
+  return q.messages[0]
+}
